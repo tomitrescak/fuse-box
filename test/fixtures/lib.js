@@ -6,12 +6,15 @@ const FuseBox = build.FuseBox;
 const mkdirp = require("mkdirp");
 const appRoot = require("app-root-path");
 const path = require("path");
+console.log('*** AAAA');
+console.log(path.join(__dirname, "modules"));
 exports.getTestEnv = (files, str, config, returnConcat) => {
     return new Promise((resolve, reject) => {
         let fsb = new FuseBox(Object.assign({
             log: false,
             cache: false,
             plugins: [build.JSONPlugin()],
+            modulesFolder: path.join(__dirname, "modules"),
             files: files
         }, config || {}));
 
@@ -26,7 +29,7 @@ exports.getTestEnv = (files, str, config, returnConcat) => {
 
             let fn = new Function("window", "__root__", str);
             fn(scope, scope);
-            
+
             return resolve(scope);
         });
     });

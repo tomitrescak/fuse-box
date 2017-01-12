@@ -211,6 +211,8 @@ describe("PathMaster", () => {
         result.fuseBoxPath.should.equal("bundles/core.umd.js");
     });
 
+
+
     // it("Should extract options with value", () => {
     //     let result = pm.resolve("./hello.js?raw=1", getTestFolder("./bar/data.json"));
 

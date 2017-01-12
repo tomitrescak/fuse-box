@@ -212,27 +212,72 @@ export class PathMaster {
             name = path.join(this.rootPackagePath, name);
         }
 
+
+
         if (!AllowedExtenstions.has(ext)) {
 
-            if (/\/$/.test(name)) {
-                return `${name}index${fileExt}`;
-            }
-            let folderDir = path.isAbsolute(name) ? path.join(name, `index${fileExt}`)
-                : path.join(root, name, `index${fileExt}`);
+            // if (/\/$/.test(name)) {
+            //     return `${name}index${fileExt}`;
+            // }
 
-            if (fs.existsSync(folderDir)) {
-                let startsWithDot = name[0] === "."; // After transformation we need to bring the dot back
-                name = path.join(name, "/", `index${fileExt}`); // detecting a real relative path
-                if (startsWithDot) {
-                    // making sure we are not modifying it and converting to
-                    // what can be take for node_module
-                    // For example: ./foo if a folder, becomes "foo/index.js",
-                    // whereas foo can be interpreted as node_module
-                    name = `./${name}`;
+            let folder = path.isAbsolute(name) ? name : path.join(root, name);
+
+            if (fs.existsSync(folder)) {
+                let packageJSONFile = path.join(folder, "package.json");
+                if (fs.existsSync(packageJSONFile)) {
+                    let pkg = require(packageJSONFile);
+                    if (pkg.main) {
+                        let res = path.join(root, name, pkg.main);
+                        return res;
+                    }
+                } else {
+                    let mainFile = path.join(folder, `index${fileExt}`);
+                    if (fs.existsSync(mainFile)) {
+                        let startsWithDot = name[0] === "."; // After transformation we need to bring the dot back
+                        name = path.join(name, "/", `index${fileExt}`); // detecting a real relative path
+                        if (startsWithDot) {
+                            // making sure we are not modifying it and converting to
+                            // what can be take for node_module
+                            // For example: ./foo if a folder, becomes "foo/index.js",
+                            // whereas foo can be interpreted as node_module
+                            name = `./${name}`;
+                        }
+                    }
                 }
             } else {
-                name += fileExt;
+                return name += fileExt;
             }
+
+            // let folderDir = path.isAbsolute(name) ? path.join(name, `index${fileExt}`)
+            //     : path.join(root, name, `index${fileExt}`);
+
+            // if (fs.existsSync(folderDir)) {
+            //     let startsWithDot = name[0] === "."; // After transformation we need to bring the dot back
+            //     name = path.join(name, "/", `index${fileExt}`); // detecting a real relative path
+            //     if (startsWithDot) {
+            //         // making sure we are not modifying it and converting to
+            //         // what can be take for node_module
+            //         // For example: ./foo if a folder, becomes "foo/index.js",
+            //         // whereas foo can be interpreted as node_module
+            //         name = `./${name}`;
+            //     }
+            // } else {
+            //     console.log("no", ext);
+            //     // need to check if package.json is defined
+            //     // Simplify the condition for non-extension cases
+            //     if (!ext) {
+            //         console.log("here");
+            //         let folder = path.isAbsolute(name) ? name : path.join(root, name);
+            //         let packageJSONFile = path.join(folder, "package.json");
+            //         if (fs.existsSync(packageJSONFile)) {
+            //             let pkg = require(packageJSONFile);
+            //             if (pkg.main) {
+            //                 return path.join(folder, pkg.main);
+            //             }
+            //         }
+            //     }
+            //     name += fileExt;
+            // }
         }
 
 
