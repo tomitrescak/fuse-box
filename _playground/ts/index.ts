@@ -5,6 +5,8 @@
 //import "path"
 //import "./styles.css"
 //import "./test.scss";
+
+console.log(require("lib_with_inner_package/foo"));
 class A {
     constructor() { }
 }

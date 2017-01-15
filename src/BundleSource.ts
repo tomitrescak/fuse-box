@@ -81,6 +81,16 @@ export class BundleSource {
         }
         this.collectionSource.add(null, `FuseBox.pkg("${collection.name}", ${JSON.stringify(
             conflicting)}, function(___scope___){`);
+
+        // put alias names
+        // in case of a folder that has a package.json with "main" directive in it
+        if (collection.pm.packageAliasList.size) {
+            let packageAliasList = {};
+            collection.pm.packageAliasList.forEach((value, key) => {
+                packageAliasList[key] = value;
+            });
+            this.collectionSource.add(null, `___scope___.al = ${JSON.stringify(packageAliasList)};`);
+        }
     }
 
     /**
