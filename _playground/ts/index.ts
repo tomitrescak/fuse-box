@@ -1,27 +1,8 @@
+import { Watch } from "wires-reactive";
 
-//import "./a.txt";
-//import "./b.txt";
-//import "path"
-//import "./styles.css"
-//import "./test.scss";
-console.log(process.env.foo);
+console.log(Watch);
 
-
-import "./some";
-
-class A {
-    constructor() { }
-}
-class B extends A {
-    constructor() {
-
-        super();
-    }
+let data = {
+    "dist/commonjs/index.js": function (exports, require, module, __filename, __dirname) { }
 }
 
-//require("./hello")
-//let a = require("./foo.js")
-//console.log(a);
-//var debug = require('debug')('compression')
-//console.log(debug);
-//export default typeof window === undefined;

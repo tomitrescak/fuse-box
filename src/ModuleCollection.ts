@@ -1,5 +1,5 @@
 import { File } from "./File";
-import { PathMaster, IPackageInformation } from "./PathMaster";
+import { IPackageInformation, IPathInformation, PathMaster } from "./PathMaster";
 import { WorkFlowContext } from "./WorkflowContext";
 import { each, utils } from "realm-utils";
 import { BundleData } from "./Arithmetic";
@@ -21,6 +21,8 @@ export class ModuleCollection {
     public nodeModules: Map<string, ModuleCollection> = new Map();
 
     public traversed = false;
+
+    public requireAst = {}
     /**
      * 
      * 
@@ -111,6 +113,8 @@ export class ModuleCollection {
      * @memberOf ModuleCollection
      */
     private delayedResolve = false;
+
+    private fileIndex = -1;
 
     /**
      * Creates an instance of ModuleCollection.
@@ -276,8 +280,11 @@ export class ModuleCollection {
      * @memberOf ModuleCollection
      */
     public resolve(file: File, shouldIgnoreDeps?: boolean) {
-
+        this.fileIndex++;
         file.collection = this;
+        file.index = this.fileIndex;
+
+
         if (this.bundle) {
             if (this.bundle.fileBlackListed(file)) {
                 return;
@@ -321,12 +328,22 @@ export class ModuleCollection {
             if (this.entryFile && this.entryFile.isNodeModuleEntry) {
                 fileLimitPath = this.entryFile.info.absPath;
             }
-
+            let index = -1;
             // Process file dependencies recursively
             return each(file.analysis.dependencies, name => {
-                return this.resolve(new File(this.context,
-                    this.pm.resolve(name, file.info.absDir, fileLimitPath)), shouldIgnoreDeps);
-            })
+                let resolvedInfo = this.pm.resolve(name, file.info.absDir, fileLimitPath);
+                let newFile = new File(this.context, resolvedInfo);
+
+                let requireStatements = file.analysis.astRequireStatementCollection;
+                if (resolvedInfo.isNodeModule) {
+                    requireStatements.delete(name);
+                } else {
+                    let ast = requireStatements.get(name);
+                    newFile.requireAst[resolvedInfo.fuseBoxPath] = ast;
+                    this.requireAst[resolvedInfo.fuseBoxPath] = index++;
+                }
+                return this.resolve(newFile, shouldIgnoreDeps);
+            });
         }
     }
 }

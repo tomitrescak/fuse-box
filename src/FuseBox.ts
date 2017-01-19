@@ -94,7 +94,7 @@ export class FuseBox {
         this.context.initCache();
     }
 
-     public triggerPre() {
+    public triggerPre() {
         this.context.triggerPluginsMethodOnce("preBundle", [this.context]);
     }
 

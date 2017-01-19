@@ -28,7 +28,11 @@ export class File {
 
     public notFound: boolean;
 
+    public index: number;
+
     public params: Map<string, string>;
+
+    public requireAst = {};
     /**
      * 
      * 

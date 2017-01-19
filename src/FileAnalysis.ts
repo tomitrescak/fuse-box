@@ -24,11 +24,10 @@ export class FileAnalysis {
      * @memberOf FileAST
      */
     public ast: any;
+    public astRequireStatementCollection = new Map<string, any>();
 
     private wasAnalysed = false;
     private skipAnalysis = false;
-
-
 
     /**
      * A list of dependencies 
@@ -76,13 +75,15 @@ export class FileAnalysis {
      */
     public parseUsingAcorn(options?: any) {
         try {
-            this.ast = acorn.parse(this.file.contents, {...options || {}, ...{
-                sourceType: "module",
-                tolerant: true,
-                ecmaVersion: 8,
-                plugins: { es7: true, jsx: true },
-                jsx: { allowNamespacedObjects: true }
-            }});
+            this.ast = acorn.parse(this.file.contents, {
+                ...options || {}, ...{
+                    sourceType: "module",
+                    tolerant: true,
+                    ecmaVersion: 8,
+                    plugins: { es7: true, jsx: true },
+                    jsx: { allowNamespacedObjects: true }
+                }
+            });
         } catch (err) {
             return PrettyError.errorWithContents(err, this.file);
         }
@@ -150,12 +151,17 @@ export class FileAnalysis {
                     if (node.callee.type === "Identifier" && node.callee.name === "require") {
                         let arg1 = node.arguments[0];
                         if (isString(arg1)) {
+                            //node.callee.name = "fusebox_require";
+                            this.astRequireStatementCollection.set(arg1.value, node);
                             out.requires.push(arg1.value);
                         }
                     }
                 }
             }
         });
+
+
+
         out.requires.forEach(name => {
             this.dependencies.push(name);
         });
@@ -180,6 +186,9 @@ export class FileAnalysis {
         this.wasAnalysed = true;
     }
 
+    public regenerateContents() {
+        this.file.contents = escodegen.generate(this.ast);
+    }
     /**
      * Removes a footer with FuseBox API
      * In case a file we require appears to be a bundle

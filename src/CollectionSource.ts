@@ -17,7 +17,22 @@ export class CollectionSource {
         return this.resolveFiles(collection.dependencies).then(files => {
 
             this.context.source.startCollection(collection);
+            let requiredKeys = Object.keys(collection.requireAst);
             files.forEach(f => {
+                for (let p in f.requireAst) {
+                    let ast = f.requireAst[p];
+
+                    ast.callee.name = "fusebox_require";
+                    let foundIndex = requiredKeys.indexOf(f.info.fuseBoxPath).toString();
+                    ast.arguments[0].value = foundIndex;
+                    ast.arguments[0].raw = foundIndex;
+
+                }
+
+
+                f.analysis.regenerateContents();
+
+
                 this.context.source.addFile(f);
             });
             return this.context.source.endCollection(collection);
