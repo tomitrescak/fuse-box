@@ -418,7 +418,14 @@ function $import(name, o) {
       v: ref.versions,
     });
     if (FuseBox['sdep']) {
-      syntheticDefaultExportPolyfill(result);
+      if (result == null || ['function', 'object', 'array'].indexOf(typeof result) === -1) {
+        result = {
+          __esModule: true,
+          default: result
+        }
+      } else {
+        syntheticDefaultExportPolyfill(result);
+      }
     }
     return result;
   };
